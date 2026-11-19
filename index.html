@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OS-Sim Lab</title>
+  <meta name="description" content="Interactive operating-systems simulator: CPU scheduling Gantt charts, page replacement and the Banker's algorithm, with a check-my-answer mode.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <nav class="topnav" aria-label="Site"><a href="https://reshamrajs.github.io/open-tools/">← All tools</a><a href="https://github.com/reshamrajs/os-sim-lab">GitHub</a></nav>
+      <h1>OS-Sim Lab</h1>
+      <p>See operating-system algorithms run step by step. Enter your own numbers or load a textbook example.</p>
+      <nav class="tabs" role="tablist" aria-label="Simulators">
+        <button role="tab" id="tab-cpu" aria-controls="panel-cpu" aria-selected="true">CPU scheduling</button>
+        <button role="tab" id="tab-paging" aria-controls="panel-paging" aria-selected="false">Page replacement</button>
+        <button role="tab" id="tab-bankers" aria-controls="panel-bankers" aria-selected="false">Banker's algorithm</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- CPU SCHEDULING -->
+    <section id="panel-cpu" role="tabpanel" aria-labelledby="tab-cpu">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>Processes</h2>
+          <div class="table-scroll">
+            <table class="input-table" id="proc-table">
+              <thead><tr><th>Name</th><th>Arrival</th><th>Burst</th><th>Priority</th><th><span class="sr-only">Remove</span></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="row-actions">
+            <button id="add-proc" class="secondary" type="button">+ Add process</button>
+            <button id="random-proc" class="secondary" type="button">Random</button>
+            <select id="cpu-example" aria-label="Load an example">
+              <option value="">Load example…</option>
+              <option value="classic">Textbook: 24, 3, 3 (all at 0)</option>
+              <option value="srtf">Textbook: SRTF with arrivals</option>
+              <option value="priority">Textbook: priority</option>
+            </select>
+          </div>
+          <div class="controls">
+            <label>Algorithm <select id="cpu-algo"></select></label>
+            <label id="quantum-wrap">Time quantum <input id="quantum" type="number" min="1" value="2"></label>
+            <button id="run-cpu" type="button">Run</button>
+          </div>
+          <p class="hint">Lower priority number = higher priority.</p>
+          <p id="cpu-error" class="error" role="alert"></p>
+        </div>
+
+        <div class="card result">
+          <h2>Gantt chart</h2>
+          <div id="gantt" class="gantt" aria-label="Gantt chart"></div>
+          <div id="cpu-stats" class="stats"></div>
+          <div class="mode-switch">
+            <label><input type="checkbox" id="practice"> Practice mode: hide answers so I can check my own</label>
+          </div>
+          <div class="table-scroll"><table id="cpu-results" class="results"></table></div>
+          <p id="check-feedback" class="feedback" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Compare all algorithms on these processes</h2>
+        <div class="table-scroll"><table id="cpu-compare" class="results"></table></div>
+      </div>
+    </section>
+
+    <!-- PAGE REPLACEMENT -->
+    <section id="panel-paging" role="tabpanel" aria-labelledby="tab-paging" hidden>
+      <div class="card">
+        <h2>Reference string</h2>
+        <div class="controls">
+          <label class="grow">Pages <input id="refs" type="text" value="7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1"></label>
+          <label>Frames <input id="frames" type="number" min="1" max="10" value="3"></label>
+          <label>Algorithm <select id="page-algo"></select></label>
+          <button id="run-paging" type="button">Run</button>
+        </div>
+        <div class="row-actions">
+          <button id="belady" class="secondary" type="button">Show Belady's anomaly</button>
+          <button id="step-back" class="secondary" type="button" aria-label="Previous step">◀ Step</button>
+          <button id="step-fwd" class="secondary" type="button" aria-label="Next step">Step ▶</button>
+          <button id="play" class="secondary" type="button">▶ Play</button>
+          <span id="step-label" class="hint"></span>
+        </div>
+        <p id="paging-error" class="error" role="alert"></p>
+      </div>
+      <div class="card">
+        <div id="paging-stats" class="stats"></div>
+        <div class="table-scroll"><table id="paging-table" class="frames-table"></table></div>
+        <p class="hint">Red = page fault, green = hit, outlined = the frame that changed.</p>
+      </div>
+      <div class="card">
+        <h2>Faults for 1 to 7 frames</h2>
+        <div class="table-scroll"><table id="paging-compare" class="results"></table></div>
+      </div>
+    </section>
+
+    <!-- BANKER'S -->
+    <section id="panel-bankers" role="tabpanel" aria-labelledby="tab-bankers" hidden>
+      <div class="card">
+        <h2>System state</h2>
+        <div class="controls">
+          <label>Processes <input id="bk-n" type="number" min="1" max="10" value="5"></label>
+          <label>Resource types <input id="bk-m" type="number" min="1" max="6" value="3"></label>
+          <button id="bk-resize" class="secondary" type="button">Resize</button>
+          <button id="bk-example" class="secondary" type="button">Load textbook example</button>
+        </div>
+        <div class="table-scroll"><table id="bk-table" class="input-table"></table></div>
+        <div class="controls">
+          <button id="bk-run" type="button">Check safety</button>
+        </div>
+        <p id="bk-error" class="error" role="alert"></p>
+      </div>
+      <div class="card">
+        <h2>Result</h2>
+        <div id="bk-verdict" class="verdict"></div>
+        <div class="table-scroll"><table id="bk-steps" class="results"></table></div>
+      </div>
+      <div class="card">
+        <h2>Resource request</h2>
+        <div class="controls" id="bk-request"></div>
+        <p id="bk-request-result" class="feedback" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p>Open source (MIT). Found a bug or want a new algorithm? <a href="https://github.com/reshamrajs/os-sim-lab/issues">Open an issue on GitHub</a>.</p>
+  </footer>
+
+  <script type="module" src="src/ui/app.js"></script>
+</body>
+</html>
